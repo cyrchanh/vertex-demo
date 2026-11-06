@@ -1,0 +1,19 @@
+pluginManagement {
+	repositories {
+		maven {
+			name = 'Fabric'
+			url = 'https://maven.fabricmc.net/'
+		}
+		mavenCentral()
+		gradlePluginPortal()
+	}
+}
+
+// Should match your modid
+rootProject.name = 'vertex'
+
+// Standalone MCP server that lets AI apps read your Vertex replays (no Minecraft needed).
+include 'mcp-server'
+
+// Server-side self-play arena: two bot players controlled tick by tick from Python.
+include 'arena'

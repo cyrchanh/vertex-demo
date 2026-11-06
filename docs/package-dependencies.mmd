@@ -1,0 +1,22 @@
+graph TD
+    VC["VertexClient<br/>(entrypoint, menu buttons)"]
+    KEYS["VertexKeys<br/>(rebindable keys)"]
+    CMD["command"]
+    MIX["mixin"]
+    REC["record<br/>(fight + arena capture, store)"]
+    REP["replay<br/>(library, replay world, viewer)"]
+    CORE["core: trace, detect, explain, view<br/>(no Minecraft imports)"]
+
+    VC --> KEYS
+    VC --> CMD
+    VC --> REC
+    VC --> REP
+    VC --> CORE
+    CMD --> REC
+    CMD --> REP
+    CMD --> CORE
+    MIX --> REC
+    REC --> CORE
+    REP --> KEYS
+    REP --> REC
+    REP --> CORE

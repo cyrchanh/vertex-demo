@@ -1,0 +1,23 @@
+sequenceDiagram
+    participant Net as Server packets<br/>(network thread)
+    participant Mix as ClientPacketListenerMixin<br/>(main thread, at RETURN)
+    participant Rec as DuelRecorder
+    participant Tick as END_CLIENT_TICK
+    participant Ana as vertex-analysis thread
+    participant Store as ReplayStore
+    participant UI as Chat / ReplayScreen
+
+    Net->>Mix: damage event, crit animation,<br/>attack sounds, velocity
+    Mix->>Rec: CombatPackets.damage/animate/sound/motion<br/>(buffered as signals)
+    Note over Rec: your click: AttackEntityCallback →<br/>onLocalAttack (records the client's prediction)
+    loop every client tick
+        Tick->>Rec: onEndClientTick
+        Rec->>Rec: sample you + nearby entities → pre-roll buffer
+        Rec->>Rec: resolve last tick's damage with<br/>sounds/crit from that tick and this one
+        Rec->>Rec: append TickFrame, then check end conditions
+    end
+    Rec->>Ana: finish(): immutable DuelTrace
+    Ana->>Ana: InteractionDetector → Explainer → ReplayDocument
+    Ana->>Store: save .json.gz + index
+    Ana->>UI: (back on main thread) chat summary + [Watch replay]
+    UI->>UI: /vertex watch → ReplayScreen → GhostCast

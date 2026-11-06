@@ -1,0 +1,26 @@
+{
+	"schemaVersion": 1,
+	"id": "vertex-arena",
+	"version": "${version}",
+	"name": "Vertex Arena (self-play)",
+	"description": "Two bot players in a closed arena, controlled tick by tick from a local Python training process. For the project's own headless training servers only.",
+	"authors": [
+		"cyrchanh"
+	],
+	"contact": {
+		"homepage": "https://github.com/cyrchanh/vertex-demo"
+	},
+	"license": "MIT",
+	"environment": "server",
+	"entrypoints": {
+		"main": [
+			"com.vertexpvp.arena.ArenaMod"
+		]
+	},
+	"depends": {
+		"fabricloader": ">=0.19.5",
+		"minecraft": "~26.2",
+		"java": ">=25",
+		"fabric-api": "*"
+	}
+}

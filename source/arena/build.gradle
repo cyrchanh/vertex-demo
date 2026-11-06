@@ -1,0 +1,84 @@
+plugins {
+	id 'net.fabricmc.fabric-loom'
+}
+
+// vertex-arena: a server-side Fabric mod that runs two bot players in a closed arena and lets a
+// Python training process control them one tick at a time over a local socket (self-play).
+// It never runs on public servers: it's for the project's own headless training servers.
+
+version = rootProject.version
+group = rootProject.group
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	minecraft "com.mojang:minecraft:${project.minecraft_version}"
+	implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+}
+
+if (rootProject.hasProperty("vertexBuildDir")) {
+	layout.buildDirectory = file("${rootProject.property('vertexBuildDir')}/arena")
+}
+
+loom {
+	runs {
+		server {
+			// The server writes its world and logs here. Outside OneDrive when vertexBuildDir is
+			// set, because synced folders lock files the server rewrites constantly.
+			if (rootProject.hasProperty("vertexBuildDir")) {
+				runDir = projectDir.toPath().relativize(file("${rootProject.property('vertexBuildDir')}/arena-run").toPath()).toString()
+			}
+			programArgs "--nogui"
+		}
+	}
+}
+
+// The server needs an accepted EULA and arena-friendly settings before its first start.
+tasks.register("prepareArenaRun") {
+	def runDir = rootProject.hasProperty("vertexBuildDir") ? file("${rootProject.property('vertexBuildDir')}/arena-run") : file("run")
+	outputs.upToDateWhen { false }
+	doLast {
+		runDir.mkdirs()
+		new File(runDir, "eula.txt").text = "eula=true\n"
+		def props = new File(runDir, "server.properties")
+		if (!props.exists()) {
+			props.text = [
+				"online-mode=false",          // lets you join with your own client to watch
+				"server-ip=127.0.0.1",
+				"server-port=25566",
+				"level-type=minecraft\\:flat",
+				"generate-structures=false",
+				"spawn-monsters=false",
+				"spawn-protection=0",
+				"difficulty=normal",          // not peaceful: peaceful regenerates health constantly
+				"pvp=true",
+				"max-tick-time=-1",           // the server waits for Python between ticks
+				"view-distance=4",
+				"simulation-distance=4",
+				"sync-chunk-writes=false",
+				"motd=Vertex arena (local self-play)",
+			].join("\n") + "\n"
+		}
+	}
+}
+tasks.named("runServer") { dependsOn "prepareArenaRun" }
+
+processResources {
+	def version = project.version
+	inputs.property "version", version
+	filesMatching("fabric.mod.json") {
+		expand "version": version
+	}
+}
+
+tasks.withType(JavaCompile).configureEach {
+	it.options.release = 25
+}
+
+java {
+	sourceCompatibility = JavaVersion.VERSION_25
+	targetCompatibility = JavaVersion.VERSION_25
+}

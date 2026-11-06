@@ -1,0 +1,30 @@
+{
+	"schemaVersion": 1,
+	"id": "vertex",
+	"version": "${version}",
+	"name": "Vertex - PvP Fight Replays & Coaching",
+	"description": "Records your sword fights from what your client already receives (your exact inputs plus the server's own hit, crit and knockback signals), then lets you rewatch them as a 3D replay from either fighter's view, with plain-English coaching on each exchange. Client-only, post-fight only, no input automation, nothing leaves your computer.",
+	"authors": [
+		"cyrchanh"
+	],
+	"contact": {
+		"homepage": "https://github.com/cyrchanh/vertex-demo"
+	},
+	"license": "MIT",
+	"icon": "assets/vertex/icon.png",
+	"environment": "client",
+	"entrypoints": {
+		"client": [
+			"com.vertexpvp.vertex.VertexClient"
+		]
+	},
+	"mixins": [
+		"vertex.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.19.5",
+		"minecraft": "~26.2",
+		"java": ">=25",
+		"fabric-api": "*"
+	}
+}

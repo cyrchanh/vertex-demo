@@ -1,0 +1,16 @@
+{
+	"required": true,
+	"package": "com.vertexpvp.vertex.mixin",
+	"compatibilityLevel": "JAVA_25",
+	"client": [
+		"ClientPacketListenerMixin",
+		"GameRendererMixin",
+		"LivingEntityAccessor"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	},
+	"overwrites": {
+		"requireAnnotations": true
+	}
+}

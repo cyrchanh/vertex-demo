@@ -1,0 +1,16 @@
+{
+	"schemaVersion": 1,
+	"id": "vertex-gametest",
+	"version": "1.0.0",
+	"name": "Vertex game tests",
+	"environment": "*",
+	"entrypoints": {
+		"fabric-client-gametest": [
+			"com.vertexpvp.vertex.gametest.VertexClientGameTest"
+		]
+	},
+	"depends": {
+		"vertex": "*",
+		"fabric-client-gametest-api-v1": "*"
+	}
+}

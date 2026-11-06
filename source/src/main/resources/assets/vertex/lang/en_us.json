@@ -1,0 +1,15 @@
+{
+  "vertex.replay.title": "Vertex Replay",
+  "key.category.vertex.replay": "Vertex Replay",
+  "key.vertex.open_library": "Open replay library",
+  "key.vertex.play_pause": "Replay: play / pause",
+  "key.vertex.back": "Replay: back 1 second",
+  "key.vertex.forward": "Replay: forward 1 second",
+  "key.vertex.faster": "Replay: faster",
+  "key.vertex.slower": "Replay: slower",
+  "key.vertex.view_1": "Replay: fighter 1",
+  "key.vertex.view_2": "Replay: fighter 2",
+  "key.vertex.camera": "Replay: switch camera",
+  "key.vertex.next_exchange": "Replay: next exchange",
+  "key.vertex.previous_exchange": "Replay: previous exchange"
+}

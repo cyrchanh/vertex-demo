@@ -1,0 +1,55 @@
+plugins {
+	id 'java'
+}
+
+// Standalone MCP (Model Context Protocol) server over your Vertex replay folder.
+// It compiles the mod's Minecraft-free `core` package directly from ../src/main/java, so the
+// replay format, detector and explainer are shared code - and the build proves `core` has no
+// Minecraft dependency.
+
+repositories {
+	mavenCentral()
+}
+
+sourceSets {
+	main {
+		java {
+			srcDir '../src/main/java'
+			include 'com/vertexpvp/vertex/core/**'
+			include 'com/vertexpvp/vertex/mcp/**'
+		}
+	}
+}
+
+dependencies {
+	implementation "com.google.code.gson:gson:${project.gson_version}"
+
+	testImplementation platform("org.junit:junit-bom:${project.junit_version}")
+	testImplementation "org.junit.jupiter:junit-jupiter"
+	testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+}
+
+// Java 21 so it runs on the default `java` most machines have (the mod itself targets 25).
+tasks.withType(JavaCompile).configureEach {
+	it.options.release = 21
+}
+
+if (rootProject.hasProperty("vertexBuildDir")) {
+	layout.buildDirectory = file("${rootProject.property('vertexBuildDir')}/mcp-server")
+}
+
+test {
+	useJUnitPlatform()
+}
+
+// A single runnable jar: `java -jar vertex-mcp.jar [--replays <folder>]`
+jar {
+	archiveFileName = "vertex-mcp.jar"
+	manifest {
+		attributes 'Main-Class': 'com.vertexpvp.vertex.mcp.VertexMcpServer'
+	}
+	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+	from {
+		configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+	}
+}

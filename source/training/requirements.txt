@@ -1,0 +1,10 @@
+mlflow==3.17.2
+scikit-learn==1.5.2
+pandas==2.2.2
+numpy==1.26.4
+pyarrow==18.1.0
+matplotlib>=3.7
+gymnasium==1.1.1
+pettingzoo==1.25.0
+torch==2.5.1
+anthropic==2.5.0

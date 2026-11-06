@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vertex Fight Coach</title>
+<meta name="description" content="Vertex records Minecraft sword fights from exact server signals, replays them, and coaches every exchange. Plus a self-play RL lab that studies whether bot skill transfers to people.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 3 29 27H3z' fill='%232a78d6'/%3E%3Cpath d='M16 12 22 23H10z' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap top-row">
+    <a class="brand" href="#"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3 29 27H3z"/><path class="cut" d="M16 12 22 23H10z"/></svg>Vertex</a>
+    <nav>
+      <a href="#game">In game</a>
+      <a href="#replay">Replay</a>
+      <a href="#how">How it works</a>
+      <a href="#ai">AI research</a>
+      <a href="#engineering">Engineering</a>
+      <a class="gh" href="https://github.com/cyrchanh/vertex-demo">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+<section class="hero wrap">
+  <p class="eyebrow">Minecraft mod · Game analytics · Reinforcement learning</p>
+  <h1>An AI fight coach that tells you <em>why</em> you lost the exchange.</h1>
+  <p class="lede">Vertex is a Fabric mod for Minecraft 26.2. It records your sword fights from the exact
+    signals the server sends, replays them in 3D, and coaches every exchange in plain English: what
+    happened, why, what to do instead, and why that works. Behind it is a self-play lab where RL bots
+    train on real headless servers, and a research question: <strong>does what a bot learns
+    actually transfer to people?</strong></p>
+  <div class="cta">
+    <a class="btn primary" href="#replay">▶ Watch a real fight</a>
+    <a class="btn" href="https://github.com/cyrchanh/vertex-demo/tree/main/source">Read the code</a>
+  </div>
+  <ul class="stats" aria-label="Project at a glance">
+    <li><b>71</b><span>real fights recorded and coached</span></li>
+    <li><b>20</b><span>fight techniques detected from tick data</span></li>
+    <li><b>9</b><span>duels vs. its own RL bots, 45 fights</span></li>
+    <li><b>~15k</b><span>lines of Java + Python, 50 unit tests</span></li>
+  </ul>
+</section>
+
+<!-- ============ IN THE GAME ============ -->
+<section id="game" class="wrap game">
+  <div class="sec-head">
+    <h2>In the game</h2>
+    <p>Real screenshots from Minecraft 26.2. After a fight you press Watch and the mod rebuilds the arena in a private world, where ghost copies of both fighters act it out with the coaching on screen.</p>
+  </div>
+  <div class="shots">
+    <figure class="shot wide"><a href="docs/screenshots/replay-side-view.jpg"><img src="docs/screenshots/replay-side-view.jpg" width="1600" height="988" alt="In-game replay viewer, side view: held keys on the left, coaching for the exchange on the right, timeline of hits along the bottom" loading="lazy"></a>
+      <figcaption><b>Side view.</b> A fighting-game camera that keeps both fighters in frame. Exchange 3 of 7 is coached red: <em>"You took a sprint hit without reacting"</em>, with what to do instead.</figcaption></figure>
+    <figure class="shot"><a href="docs/screenshots/replay-first-person.jpg"><img src="docs/screenshots/replay-first-person.jpg" width="1600" height="988" alt="First-person replay of a clean 3-block sprint hit, coached as good" loading="lazy"></a>
+      <figcaption><b>First person</b>, with the fighter's item, swing and cooldown: <em>"Clean 3-block sprint hit."</em></figcaption></figure>
+    <figure class="shot"><a href="docs/screenshots/replay-vs-mob.jpg"><img src="docs/screenshots/replay-vs-mob.jpg" width="1600" height="988" alt="Replay against a husk: you comboed them, 4 hits in a row" loading="lazy"></a>
+      <figcaption><b>Works against mobs too:</b> <em>"You comboed them (4 hits in a row)."</em></figcaption></figure>
+    <figure class="shot"><a href="docs/screenshots/arena-bots.jpg"><img src="docs/screenshots/arena-bots.jpg" width="1600" height="806" alt="Two RL bots in diamond armour fighting in the glass-walled self-play arena" loading="lazy"></a>
+      <figcaption><b>The self-play arena.</b> Two server-side bots driven tick by tick from Python.</figcaption></figure>
+  </div>
+  <p class="small">Player names are blurred in the screenshots.</p>
+</section>
+
+<!-- ============ REPLAY PLAYER ============ -->
+<section id="replay" class="band">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>Rewatch a real fight</h2>
+      <p>Below are actual recordings, exported straight from the mod's replay files and played back
+        in your browser (top-down view; the in-game viewer is full 3D). The coaching on the right is
+        exactly what the mod wrote. The opponent's name is removed.</p>
+    </div>
+
+    <div class="picker" role="tablist" id="picker"></div>
+
+    <div class="player">
+      <div class="stage-col">
+        <div class="stage">
+          <canvas id="arena" aria-label="Top-down view of the fight"></canvas>
+          <div class="hud-time" id="hudTime">0.0 s</div>
+          <div class="legend-chips" id="legendChips"></div>
+        </div>
+        <canvas id="timeline" class="timeline" aria-label="Fight timeline: exchanges and hits. Click to seek."></canvas>
+        <div class="controls">
+          <button id="btnPrev" title="Previous exchange (P)">⏮</button>
+          <button id="btnPlay" class="play" title="Play / pause (Space)">▶</button>
+          <button id="btnNext" title="Next exchange (N)">⏭</button>
+          <div class="speed" role="group" aria-label="Playback speed">
+            <button data-speed="0.25">¼×</button><button data-speed="0.5">½×</button><button data-speed="1" class="on">1×</button><button data-speed="2">2×</button>
+          </div>
+          <span class="kbd-hint">Space · ← → · N / P</span>
+        </div>
+        <div class="fighters" id="fighters"></div>
+      </div>
+
+      <aside class="coach" id="coach" aria-live="polite"></aside>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HOW IT WORKS ============ -->
+<section id="how" class="wrap">
+  <div class="sec-head">
+    <h2>How it works</h2>
+    <p>No input automation, no HUD during the fight, and nothing leaves your computer. The mod only
+      listens to packets the client already receives.</p>
+  </div>
+
+  <ol class="pipeline">
+    <li><span class="step">1</span><h3>Record</h3><p>Read-only mixins on 4 packet handlers. Every tick: positions, velocity, your exact keys and attack charge, held items, armour, and the blocks around the fight.</p><code>record/DuelRecorder</code></li>
+    <li><span class="step">2</span><h3>Classify hits</h3><p>Each damage packet is paired with the server's crit animation and attack sounds, so CRIT / SPRINT_HIT / WEAK is <em>the server's verdict</em>, then checked against what your client predicted.</p><code>record/CombatPackets</code></li>
+    <li><span class="step">3</span><h3>Detect</h3><p>Hits are grouped into exchanges. 20 rule-based techniques fire on the tick data: jump resets, S-taps, failed jump-ins, whiff punishes, combos…</p><code>core/detect/InteractionDetector</code></li>
+    <li><span class="step">4</span><h3>Explain</h3><p>A prioritised explainer (mistakes before strengths) writes four-part coaching from the owner's own Sword guides, behind an interface so an AI explainer can replace it.</p><code>core/explain/Explainer</code></li>
+    <li><span class="step">5</span><h3>Replay &amp; query</h3><p>A private void world rebuilds the recorded arena; ghosts act out the fight. An MCP server lets AI assistants query every replay with 7 tools.</p><code>replay/ · mcp-server/</code></li>
+  </ol>
+
+  <div class="truth">
+    <h3>Honest about what it knows</h3>
+    <div class="table-scroll">
+    <table>
+      <thead><tr><th>Fact</th><th>Source</th><th>Exact?</th></tr></thead>
+      <tbody>
+        <tr><td>Who hit whom</td><td>Server damage-event packet</td><td><span class="tag good">✓ Exact</span></td></tr>
+        <tr><td>Crit / sprint hit / weak</td><td>Server attack sounds + crit animation</td><td><span class="tag good">✓ Exact</span></td></tr>
+        <tr><td>Your keys and attack charge</td><td>Your own client</td><td><span class="tag good">✓ Exact</span></td></tr>
+        <tr><td>Opponent movement per tick</td><td>Position deltas, smoothed by ping</td><td><span class="tag warn">~ Estimated</span></td></tr>
+        <tr><td>Opponent's keys and charge</td><td>Never sent to clients</td><td><span class="tag bad">✕ Unknown</span></td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p class="small">Rules that need exact keys (S-tap, jump reset, backing off) only ever fire for the recording player. They're never guessed for the opponent.</p>
+  </div>
+</section>
+
+<!-- ============ AI RESEARCH ============ -->
+<section id="ai" class="band">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>The AI lab: can a bot's skill teach a person?</h2>
+      <p>A server-side mod spawns two real server-player bots on a headless Minecraft server, driven
+        one decision at a time from Python through a lockstep socket protocol and a PettingZoo
+        environment (9–19× real time). Policies train with PPO in a league (self-play, snapshots,
+        scripted styles, Elo), kick-started by behaviour cloning and a curriculum, then distilled into
+        an LSTM with an opponent-prediction head. Every run is tracked in MLflow with a champion gate.</p>
+    </div>
+
+    <div class="charts">
+      <figure class="chart-card">
+        <figcaption>
+          <h3>The creator vs. each bot version</h3>
+          <p>Total hits landed per 5-fight duel. The bots changed a lot between versions, but the human came out ahead in all 45 fights.</p>
+        </figcaption>
+        <div class="chart" id="chartDuels"></div>
+        <details><summary>Table view</summary><div id="tableDuels" class="table-scroll"></div></details>
+      </figure>
+
+      <figure class="chart-card">
+        <figcaption>
+          <h3>Better on bots, worse on people</h3>
+          <p>Judgement = how much a checkpoint's value head beats a plain health-bar baseline. Checkpoints that judge bot fights better judge the human's fights <em>worse</em> (Spearman ρ = −0.73, p = 0.01).</p>
+        </figcaption>
+        <div class="chart" id="chartAudit"></div>
+        <details><summary>Table view</summary><div id="tableAudit" class="table-scroll"></div></details>
+      </figure>
+    </div>
+
+    <div class="findings">
+      <div><h3>Negative results, reported as such</h3><p>No value head beats the health bar on the human's fights. The fight "memory" that seemed to read the player turned out to be measured against a wiped-memory baseline that was itself below simply guessing the player's most common keys (83.1%).</p></div>
+      <div><h3>What does work</h3><p>A player model fine-tuned from the bot's network predicts the human at 2.44 nats per decision vs 4.20 for frequencies (90.6% vs 80.6% of movement keys), and its habit report matches the player's real rates within 3 points.</p></div>
+      <div><h3>Where it's going</h3><p>A pre-registered study (fixed probe opponent, fixed metrics) on what makes self-play knowledge transfer to people, and LLM coaching whose advice is checked by counterfactual arena rollouts.</p></div>
+    </div>
+    <p class="small">Pilot scale: one player, 7 traced duels, 35 fights. Intervals and caveats are in the project's results notes.</p>
+  </div>
+</section>
+
+<!-- ============ ENGINEERING ============ -->
+<section id="engineering" class="wrap">
+  <div class="sec-head">
+    <h2>Engineering highlights</h2>
+  </div>
+  <div class="cards">
+    <article><h3>Architecture enforced by the build</h3><p>The detector and explainer live in a <code>core</code> package with zero Minecraft imports. The MCP server compiles <code>core</code> without Minecraft on its classpath, so a stray import breaks the build. That's what keeps it unit-testable and reusable.</p></article>
+    <article><h3>Verified against bytecode</h3><p>Vanilla 26.2's crit and sprint rules, sound attribution and packet handlers were confirmed with <code>javap</code> on the real remapped jar before use. They weren't guessed from old wikis.</p></article>
+    <article><h3>Latency-aware timing</h3><p>Your hits are timestamped at your <em>click</em>, matched to the confirming packet, so replays line up with what you did, not your ping. When client and server disagree it's flagged as <code>SERVER_DISAGREED</code>.</p></article>
+    <article><h3>Safe threading</h3><p>All sampling happens on the main thread. Analysis runs on its own thread over an immutable trace and hands results back with <code>Minecraft.execute</code>. It never touches live game objects.</p></article>
+    <article><h3>Reproducible ML</h3><p>Versioned Parquet datasets, hash-locked fight-level splits (70/20/10), a champion gate with fight-resampled intervals, and an MLflow model registry with REST serving.</p></article>
+    <article><h3>Fair bots</h3><p>Bots see the opponent 200 ms late, like a real client, and play with vanilla client rules and physics. Knockback is applied the way a client applies the motion packet.</p></article>
+  </div>
+
+  <h3 class="stack-title">Stack</h3>
+  <ul class="stack">
+    <li>Java 21</li><li>Fabric / Mixin</li><li>Gradle (3 subprojects)</li><li>JUnit 5</li><li>Python</li><li>PyTorch</li><li>PPO · LSTM · behaviour cloning</li><li>PettingZoo</li><li>MLflow</li><li>scikit-learn / boosted trees</li><li>Parquet</li><li>Model Context Protocol</li><li>LLM agents</li>
+  </ul>
+</section>
+
+</main>
+
+<footer class="wrap foot">
+  <p>Built by <a href="https://github.com/cyrchanh">cyrchanh</a>. Not affiliated with Mojang or Microsoft. MIT licensed.</p>
+</footer>
+
+<div class="tooltip" id="tooltip" role="status"></div>
+
+<script src="assets/data.js"></script>
+<script src="assets/charts.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>

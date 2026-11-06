@@ -1,0 +1,53 @@
+graph TD
+    subgraph SRC["Data sources"]
+        REC["Vertex recordings<br/>(exact keys for the recorder)"]
+        ARENA["Bot arena<br/>(headless servers, /tick sprint,<br/>random ping and rules)"]
+        VID["Permitted video<br/>(later, labelled by the<br/>inverse dynamics model)"]
+        DOCS["Mechanics docs<br/>(Wiki, plugin docs, patch notes)"]
+    end
+
+    DS[("Dataset<br/>Parquet, versioned<br/>tags: mode, version, ping,<br/>server rules, skill")]
+
+    REC --> DS
+    ARENA --> DS
+    VID --> DS
+
+    subgraph MODELS["Models"]
+        WIN0["Step 0: win predictor v0<br/>(supervised, no RL)"]
+        ENC["Shared encoder<br/>(pretrained: next / masked tick)"]
+        VAL["Value model = game sense<br/>(observable inputs only)"]
+        HUM["Human model<br/>(behaviour cloning)"]
+        POL["Self-play policy<br/>(PPO, league, piKL, human limits)"]
+    end
+
+    DS --> WIN0
+    DS --> ENC
+    ENC --> VAL
+    ENC --> HUM
+    HUM -->|"keeps play human-like"| POL
+    POL -->|"games"| ARENA
+    POL -->|"value targets"| VAL
+
+    CF["Counterfactual rollouts<br/>(restore a recorded moment,<br/>try other actions)"]
+    VAL --> CF
+    POL --> CF
+    ARENA --> CF
+
+    GATE{"Evaluation gate<br/>held-out human fights<br/>Brier, calibration, every mode"}
+    WIN0 -->|"baseline to beat"| GATE
+    VAL --> GATE
+    FINAL[("Untouched final set<br/>(used rarely)")]
+    GATE -.-> FINAL
+
+    EXP["Explainer (LLM)<br/>fact check, then DPO on<br/>player preferences"]
+    GATE -->|"accepted model"| EXP
+    CF --> EXP
+    MOD["In the mod (ONNX)<br/>post-fight analysis only"]
+    EXP --> MOD
+    MOD -->|"opt-in recordings,<br/>preferences, did-it-help"| REC
+
+    ORCH["Orchestrator agent<br/>(budget caps, decision log)"]
+    GATE -->|"weak spots"| ORCH
+    ORCH -->|"chooses source"| SRC
+    DOCS --> ORCH
+    ORCH -->|"launches training"| MODELS
